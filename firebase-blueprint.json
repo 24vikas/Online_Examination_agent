@@ -1,0 +1,280 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "User profile with role-based attributes and eligibility records",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "email": { "type": "string", "maxLength": 256 },
+        "displayName": { "type": "string", "maxLength": 128 },
+        "role": { "type": "string", "enum": ["faculty", "author", "student", "COE_AUTHOR"] },
+        "studentId": { "type": "string", "maxLength": 64 },
+        "department": { "type": "string", "maxLength": 128 },
+        "attendanceRate": { "type": "number" },
+        "feeCleared": { "type": "boolean" },
+        "createdAt": { "type": "string", "maxLength": 64 },
+        "updatedAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["id", "email", "displayName", "role"]
+    },
+    "Exam": {
+      "title": "Exam Definition",
+      "description": "Definition of an academic exam configured by faculty",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "title": { "type": "string", "maxLength": 200 },
+        "courseCode": { "type": "string", "maxLength": 32 },
+        "facultyId": { "type": "string", "maxLength": 128 },
+        "facultyName": { "type": "string", "maxLength": 128 },
+        "description": { "type": "string", "maxLength": 2000 },
+        "durationMinutes": { "type": "number" },
+        "totalMarks": { "type": "number" },
+        "passingScore": { "type": "number" },
+        "type": { "type": "string", "enum": ["objective", "subjective", "mixed"] },
+        "isMockOrPractice": { "type": "boolean" },
+        "registrationStart": { "type": "string", "maxLength": 64 },
+        "registrationEnd": { "type": "string", "maxLength": 64 },
+        "examStart": { "type": "string", "maxLength": 64 },
+        "examEnd": { "type": "string", "maxLength": 64 },
+        "status": { "type": "string", "enum": ["draft", "published", "ongoing", "grading", "published_results"] },
+        "syllabusTopic": { "type": "string", "maxLength": 500 },
+        "questionsCount": { "type": "number" },
+        "createdAt": { "type": "string", "maxLength": 64 },
+        "updatedAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["id", "title", "facultyId", "status"]
+    },
+    "Question": {
+      "title": "Exam Question",
+      "description": "Question schema for an exam",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "examId": { "type": "string", "maxLength": 128 },
+        "type": { "type": "string", "enum": ["mcq", "subjective"] },
+        "prompt": { "type": "string", "maxLength": 5000 },
+        "correctAnswer": { "type": "string", "maxLength": 2000 },
+        "rubric": { "type": "string", "maxLength": 3000 },
+        "maxMarks": { "type": "number" },
+        "orderIndex": { "type": "number" },
+        "createdAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["id", "examId", "type", "prompt", "maxMarks"]
+    },
+    "Registration": {
+      "title": "Exam Registration",
+      "description": "Student registration for a specific exam with eligibility",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "examId": { "type": "string", "maxLength": 128 },
+        "studentId": { "type": "string", "maxLength": 128 },
+        "studentName": { "type": "string", "maxLength": 128 },
+        "studentEmail": { "type": "string", "maxLength": 256 },
+        "registeredAt": { "type": "string", "maxLength": 64 },
+        "eligibilityVerified": { "type": "boolean" },
+        "attendanceRate": { "type": "number" },
+        "feeCleared": { "type": "boolean" },
+        "status": { "type": "string", "enum": ["registered", "started", "submitted", "graded"] }
+      },
+      "required": ["id", "examId", "studentId", "status"]
+    },
+    "Submission": {
+      "title": "Exam Submission",
+      "description": "Student exam answer submission, auto and AI assisted scoring",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "examId": { "type": "string", "maxLength": 128 },
+        "studentId": { "type": "string", "maxLength": 128 },
+        "studentName": { "type": "string", "maxLength": 128 },
+        "studentEmail": { "type": "string", "maxLength": 256 },
+        "startedAt": { "type": "string", "maxLength": 64 },
+        "submittedAt": { "type": "string", "maxLength": 64 },
+        "status": { "type": "string", "enum": ["in_progress", "submitted", "graded", "published"] },
+        "objectiveScore": { "type": "number" },
+        "subjectiveScore": { "type": "number" },
+        "totalScore": { "type": "number" },
+        "maxScore": { "type": "number" },
+        "isPassed": { "type": "boolean" },
+        "facultyApproved": { "type": "boolean" },
+        "facultyFeedback": { "type": "string", "maxLength": 3000 },
+        "integrityScore": { "type": "number" },
+        "integrityFlagCount": { "type": "number" },
+        "createdAt": { "type": "string", "maxLength": 64 },
+        "updatedAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["id", "examId", "studentId", "status"]
+    },
+    "IntegrityLog": {
+      "title": "Exam Integrity Log",
+      "description": "Suspicious behavior and integrity monitoring flags during exam session",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "submissionId": { "type": "string", "maxLength": 128 },
+        "examId": { "type": "string", "maxLength": 128 },
+        "studentId": { "type": "string", "maxLength": 128 },
+        "studentName": { "type": "string", "maxLength": 128 },
+        "timestamp": { "type": "string", "maxLength": 64 },
+        "flagType": { "type": "string", "enum": ["tab_switch", "fullscreen_exit", "copy_paste_attempt", "face_not_detected", "multiple_faces", "suspicious_audio"] },
+        "severity": { "type": "string", "enum": ["low", "medium", "high"] },
+        "details": { "type": "string", "maxLength": 1000 },
+        "facultyReviewed": { "type": "boolean" },
+        "facultyDecision": { "type": "string", "enum": ["pending", "cleared", "warning", "penalty_recommended", "no_action"] },
+        "facultyNotes": { "type": "string", "maxLength": 2000 },
+        "createdAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["id", "examId", "studentId", "flagType", "severity"]
+    },
+    "Grievance": {
+      "title": "Post-Exam Grievance",
+      "description": "Student post-exam revaluation request and tracking",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "examId": { "type": "string", "maxLength": 128 },
+        "examTitle": { "type": "string", "maxLength": 200 },
+        "submissionId": { "type": "string", "maxLength": 128 },
+        "studentId": { "type": "string", "maxLength": 128 },
+        "studentName": { "type": "string", "maxLength": 128 },
+        "studentEmail": { "type": "string", "maxLength": 256 },
+        "questionId": { "type": "string", "maxLength": 128 },
+        "subject": { "type": "string", "maxLength": 200 },
+        "reason": { "type": "string", "maxLength": 3000 },
+        "requestedMarks": { "type": "number" },
+        "currentMarks": { "type": "number" },
+        "status": { "type": "string", "enum": ["pending", "under_review", "resolved", "rejected"] },
+        "facultyResponse": { "type": "string", "maxLength": 3000 },
+        "newAwardedMarks": { "type": "number" },
+        "createdAt": { "type": "string", "maxLength": 64 },
+        "updatedAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["id", "examId", "studentId", "subject", "reason", "status"]
+    },
+    "Course": {
+      "title": "Course Metadata",
+      "description": "Course catalog entry with syllabus text and metadata",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "code": { "type": "string", "maxLength": 32 },
+        "title": { "type": "string", "maxLength": 200 },
+        "facultyId": { "type": "string", "maxLength": 128 },
+        "syllabusSummary": { "type": "string", "maxLength": 5000 },
+        "createdAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["id", "code", "title"]
+    },
+    "AuditLog": {
+      "title": "Agent Execution Audit Log",
+      "description": "Append-only trace of agent operations, tool calls, and checkpoint records",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "timestamp": { "type": "string", "maxLength": 64 },
+        "agentName": { "type": "string", "maxLength": 128 },
+        "stepName": { "type": "string", "maxLength": 128 },
+        "action": { "type": "string", "maxLength": 256 },
+        "tokensUsed": { "type": "number" },
+        "status": { "type": "string", "enum": ["success", "paused", "retry", "failed"] },
+        "payloadSummary": { "type": "string", "maxLength": 2000 },
+        "checkpointId": { "type": "string", "maxLength": 128 }
+      },
+      "required": ["id", "timestamp", "agentName", "action", "status"]
+    },
+    "CoeDocument": {
+      "title": "COE Document Record",
+      "description": "Uploaded PDF document with chunking metadata, native vector embeddings, and appended PDF state",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "filename": { "type": "string", "maxLength": 256 },
+        "courseCode": { "type": "string", "maxLength": 32 },
+        "title": { "type": "string", "maxLength": 200 },
+        "status": { "type": "string", "enum": ["Processing", "Pending Verification", "Completed", "Failed"] },
+        "uploadedAt": { "type": "string", "maxLength": 64 },
+        "uploadedBy": { "type": "string", "maxLength": 128 },
+        "pageCount": { "type": "number" },
+        "chunkCount": { "type": "number" },
+        "appendedPagesCount": { "type": "number" },
+        "coeApprovedBy": { "type": "string", "maxLength": 128 },
+        "coeApprovedAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["id", "filename", "courseCode", "status"]
+    },
+    "QaProposal": {
+      "title": "AI Q&A Proposal",
+      "description": "Deep search grounded Q&A pairs held in draft state for COE verification and appending",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "docId": { "type": "string", "maxLength": 128 },
+        "question": { "type": "string", "maxLength": 5000 },
+        "type": { "type": "string", "enum": ["mcq", "subjective", "interview_problem"] },
+        "correctAnswer": { "type": "string", "maxLength": 3000 },
+        "rubricOrRationale": { "type": "string", "maxLength": 3000 },
+        "bloomLevel": { "type": "string", "enum": ["Remembering", "Understanding", "Applying", "Analyzing", "Evaluating", "Creating"] },
+        "marks": { "type": "number" },
+        "status": { "type": "string", "enum": ["draft", "approved", "rejected", "edited"] }
+      },
+      "required": ["id", "docId", "question", "correctAnswer", "status"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "User profiles with role and academic eligibility attributes"
+    },
+    "/tenants/{tenantId}/courses/{courseId}": {
+      "schema": { "$ref": "#/entities/Course" },
+      "description": "Institutional course catalog and syllabus references"
+    },
+    "/exams/{examId}": {
+      "schema": { "$ref": "#/entities/Exam" },
+      "description": "Exam definitions and rules configured by faculty"
+    },
+    "/exams/{examId}/questions/{questionId}": {
+      "schema": { "$ref": "#/entities/Question" },
+      "description": "Questions belonging to a specific exam"
+    },
+    "/questions/{questionId}": {
+      "schema": { "$ref": "#/entities/Question" },
+      "description": "Centralized vetted question bank with Bloom's tags"
+    },
+    "/registrations/{registrationId}": {
+      "schema": { "$ref": "#/entities/Registration" },
+      "description": "Student registrations with eligibility verification"
+    },
+    "/submissions/{submissionId}": {
+      "schema": { "$ref": "#/entities/Submission" },
+      "description": "Student exam submissions, responses, and graded marks"
+    },
+    "/integrityLogs/{logId}": {
+      "schema": { "$ref": "#/entities/IntegrityLog" },
+      "description": "Proctoring flags and suspicious events recorded during tests"
+    },
+    "/integrity_logs/{logId}": {
+      "schema": { "$ref": "#/entities/IntegrityLog" },
+      "description": "Proctoring flags and suspicious events recorded during tests (snake_case alias)"
+    },
+    "/audit_logs/{logId}": {
+      "schema": { "$ref": "#/entities/AuditLog" },
+      "description": "Append-only trace of agent operations, tool calls, and checkpoint records"
+    },
+    "/grievances/{grievanceId}": {
+      "schema": { "$ref": "#/entities/Grievance" },
+      "description": "Post-exam revaluation requests submitted by students"
+    },
+    "/documents/{docId}": {
+      "schema": { "$ref": "#/entities/CoeDocument" },
+      "description": "Uploaded PDF documents, vector chunks, and appended PDF state"
+    },
+    "/qa_proposals/{qaId}": {
+      "schema": { "$ref": "#/entities/QaProposal" },
+      "description": "Synthesized Q&A pairs for COE verification gate"
+    }
+  }
+}

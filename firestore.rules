@@ -1,0 +1,206 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global default-deny safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // -----------------------------------------------------------------
+    // Helper Functions & Strict Custom Claims Role Enforcement
+    // -----------------------------------------------------------------
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 64 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isValidString(val, maxLen) {
+      return val is string && val.size() <= maxLen;
+    }
+
+    // Role enforcement strictly from Firebase Auth Custom Claims set server-side
+    function isCoeAuthor() {
+      return isSignedIn() && (
+        request.auth.token != null &&
+        request.auth.token.role != null &&
+        (request.auth.token.role in ['COE_AUTHOR', 'coe_author', 'coe'])
+      );
+    }
+
+    function isFaculty() {
+      return isSignedIn() && (
+        isCoeAuthor() ||
+        (request.auth.token != null &&
+         request.auth.token.role != null &&
+         (request.auth.token.role in ['FACULTY', 'faculty', 'examiner']))
+      );
+    }
+
+    function isStudent() {
+      return isSignedIn() && !isFaculty();
+    }
+
+    // -----------------------------------------------------------------
+    // User Profiles
+    // Students can read own profile; Faculty/COE can read all
+    // Students can NEVER alter 'role', 'feeCleared', 'attendanceRate', or 'prerequisitesCleared'
+    // -----------------------------------------------------------------
+    match /users/{userId} {
+      allow get: if isFaculty() || isOwner(userId);
+      allow list: if isFaculty();
+      
+      // Initial creation on signup: student cannot set role or academic credentials
+      allow create: if isSignedIn() && isOwner(userId) && isValidId(userId) &&
+        !request.resource.data.keys().hasAny(['role', 'feeCleared', 'attendanceRate', 'prerequisitesCleared']);
+        
+      // Update: Student can only edit displayName or department; administrative fields are locked
+      allow update: if (isCoeAuthor() || isFaculty()) ||
+        (isOwner(userId) && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'feeCleared', 'attendanceRate', 'prerequisitesCleared', 'studentId', 'email']));
+        
+      allow delete: if isCoeAuthor();
+    }
+
+    // -----------------------------------------------------------------
+    // Exams Collection
+    // Students read published or active exams only; answer keys are hidden
+    // Faculty/COE manage exams
+    // -----------------------------------------------------------------
+    match /exams/{examId} {
+      allow get: if isFaculty() || (isSignedIn() && resource.data.status in ['published', 'active', 'ongoing']);
+      allow list: if isFaculty() || (isSignedIn() && resource.data.status in ['published', 'active', 'ongoing']);
+
+      allow create: if isFaculty() && isValidId(examId) &&
+        isValidString(request.resource.data.title, 200) &&
+        isValidString(request.resource.data.courseCode, 32);
+        
+      allow update: if isFaculty();
+      allow delete: if isCoeAuthor();
+
+      // Exam Questions subcollection (stores answer keys and rubrics)
+      // Restricted to Faculty/COE only to prevent pre-exam answer leaking
+      match /questions/{questionId} {
+        allow read, write: if isFaculty();
+      }
+    }
+
+    // -----------------------------------------------------------------
+    // Centralized Question Bank
+    // Restricted strictly to Faculty/COE
+    // -----------------------------------------------------------------
+    match /questions/{questionId} {
+      allow read, write: if isFaculty();
+    }
+
+    // -----------------------------------------------------------------
+    // Submissions Collection
+    // Students create/read own; NO cross-student reading or overwriting (cross-student pattern removed)
+    // Students cannot modify grades, faculty approvals, or submit past window
+    // -----------------------------------------------------------------
+    match /submissions/{submissionId} {
+      allow get: if isFaculty() || (isSignedIn() && resource.data.studentId == request.auth.uid);
+      allow list: if isFaculty() || (isSignedIn() && resource.data.studentId == request.auth.uid);
+
+      // Student initial submission start
+      allow create: if isSignedIn() && isValidId(submissionId) &&
+        request.resource.data.studentId == request.auth.uid &&
+        request.resource.data.status == 'in_progress' &&
+        !request.resource.data.keys().hasAny(['score', 'totalScore', 'facultyApproved', 'facultyDecision', 'draftScore']);
+
+      // Student incremental autosave: only responses and lastSavedAt while in_progress
+      // Faculty/COE have full update authority for grading and approvals
+      allow update: if isFaculty() ||
+        (isSignedIn() &&
+         resource.data.studentId == request.auth.uid &&
+         resource.data.status == 'in_progress' &&
+         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['responses', 'lastSavedAt', 'currentQuestionIndex', 'status']) &&
+         (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['status']) || request.resource.data.status in ['in_progress', 'submitted']) &&
+         !request.resource.data.keys().hasAny(['score', 'totalScore', 'facultyApproved', 'facultyDecision']));
+
+      allow delete: if isCoeAuthor();
+    }
+
+    // -----------------------------------------------------------------
+    // Integrity Logs (Append-Only)
+    // Students can create flags for their own active session; cannot update or delete
+    // Duplicate integrityLogs removed
+    // -----------------------------------------------------------------
+    match /integrity_logs/{logId} {
+      allow get, list: if isFaculty() || (isSignedIn() && resource.data.studentUid == request.auth.uid);
+      allow create: if isSignedIn() && isValidId(logId) &&
+        request.resource.data.studentUid == request.auth.uid &&
+        request.resource.data.autoPenaltyApplied == false; // Mandatory flag-only invariant
+      allow update: if false; // Append-only: student cannot tamper with or delete logs
+      allow delete: if false;
+    }
+
+    // -----------------------------------------------------------------
+    // Grievances Collection
+    // Students file own revaluations; ONLY Faculty/COE can resolve or award revised marks
+    // -----------------------------------------------------------------
+    match /grievances/{grievanceId} {
+      allow get, list: if isFaculty() || (isSignedIn() && resource.data.studentUid == request.auth.uid);
+      
+      allow create: if isSignedIn() && isValidId(grievanceId) &&
+        request.resource.data.studentUid == request.auth.uid &&
+        request.resource.data.status in ['Submitted', 'pending'] &&
+        request.resource.data.facultyDecision == 'PENDING';
+
+      // Only Faculty can update grievance status, resolve tickets, or change marks
+      allow update: if isFaculty();
+      allow delete: if isCoeAuthor();
+    }
+
+    // -----------------------------------------------------------------
+    // Registrations & Academic Hall Tickets
+    // Managed exclusively by Faculty / CoE / Server Eligibility Agent
+    // -----------------------------------------------------------------
+    match /registrations/{registrationId} {
+      allow get, list: if isFaculty() || (isSignedIn() && resource.data.studentUid == request.auth.uid);
+      allow create, update, delete: if isFaculty();
+    }
+
+    // -----------------------------------------------------------------
+    // Documents, Chunks, and COE Q&A Proposals
+    // Restricted strictly to Faculty/COE
+    // -----------------------------------------------------------------
+    match /documents/{docId} {
+      allow read: if isFaculty();
+      allow create, update, delete: if isCoeAuthor();
+    }
+
+    match /document_chunks/{chunkId} {
+      allow read: if isFaculty();
+      allow create, update, delete: if isCoeAuthor();
+    }
+
+    match /qa_proposals/{qaId} {
+      allow read: if isFaculty();
+      allow create, update, delete: if isCoeAuthor();
+    }
+
+    // -----------------------------------------------------------------
+    // Append-Only Audit Trail
+    // -----------------------------------------------------------------
+    match /audit_logs/{logId} {
+      allow read: if isFaculty();
+      allow create: if isFaculty() && isValidId(logId);
+      allow update, delete: if false;
+    }
+
+    // -----------------------------------------------------------------
+    // Tenant Courses
+    // -----------------------------------------------------------------
+    match /tenants/{tenantId}/courses/{courseId} {
+      allow read: if isSignedIn();
+      allow write: if isCoeAuthor();
+    }
+  }
+}

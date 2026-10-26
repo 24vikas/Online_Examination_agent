@@ -1,0 +1,11 @@
+{
+  "name": "Remix Online Examination System Agent",
+  "description": "AI-powered academic portal managing registration, secure delivery, proctoring integrity monitoring, objective auto-grading, and subjective grading assistance.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

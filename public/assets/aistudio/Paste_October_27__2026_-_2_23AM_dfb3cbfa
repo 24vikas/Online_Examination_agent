@@ -1,0 +1,499 @@
+# Figma Make Prompts: All Pages of the Online Examination Portal
+
+**How to use:** paste **Prompt 0** first and let it finish. Then paste ONE page prompt per message, in the order below. After each page, check it, then continue. If a page drifts from the design system, reply: "Match the design system exactly; no new colors or components."
+
+Pages marked ★ are the must-have pages for your demo. Build those first.
+
+---
+
+## PROMPT 0: Design system (send first)
+
+```
+Use the existing "InterviewReady" exam page as the visual base for a new product:
+"KLE Exam Portal", the online examination system of KLE Technological University.
+Three roles: Student, Faculty, COE (Controller of Examinations).
+
+DESIGN SYSTEM (use only this, no new colors)
+- Background: cream-white #F6F9F6; cards white, 12px radius, 1px #E2E8E4 border, very light shadow.
+- Primary: deep green #1F4D3F (buttons, active nav, links). Primary tint mint #D6EBDD.
+- Text #10251F, muted #5B6B66 (never lighter). Min font 12px. Font: same as the existing page; monospace ONLY for exam codes, timestamps, IDs.
+- Amber #B45309 on #FEF3C7 = warning / marked / needs action.
+- Red #B91C1C on #FEE2E2 = error / last 2 minutes / critical. Green #15803D on #DCFCE7 = success.
+- Status colors appear only as small chips, dots, or thin borders. Never as full card backgrounds.
+- One primary (filled green) button per screen. Secondary = white with green outline. Ghost = text only. Destructive = red outline.
+- 8px spacing grid, 24px page padding, content max-width 1200px, 44px minimum touch targets.
+- Icons: line icons only (lucide style). No emoji. No gradients. No stock photos.
+
+SHARED COMPONENTS to build once and reuse everywhere:
+TopBar, SideNav (faculty/COE), StatusChip, Card, StatCard, DataTable (sortable header, filter bar,
+pagination, row actions, empty/loading/error states), Tabs (underline), Stepper (horizontal),
+Timer (green >10min, amber <10min, red <2min), QuestionPalette (Answered green-tint, Not answered
+white outline, Not visited grey, Marked amber, Current dark green), ProctorTile (small camera
+thumbnail with red recording dot), Dialog, Toast, Banner (info/warning/error), EmptyState,
+FormField, FileUpload, Avatar, Breadcrumb, ProgressBar, Timeline.
+
+GLOBAL RULES
+- Every consequential action (submit exam, publish results, approve, rollback) opens a confirm Dialog.
+- Every list page has: loading skeleton, empty state, error state.
+- Integrity wording is non-punitive: "Needs review", "Faculty decision required". Never "Cheating" or "Disqualified".
+- Show a thin amber banner "DEMO DATA" at the very top of every page.
+- Responsive: student pages work at 360px; faculty/COE pages at 768px and up.
+- Accessible: visible focus rings, AA contrast, labels on all inputs.
+Create a "Design System" page showing all components and states. Do not build other pages yet.
+```
+
+---
+
+# SECTION 1: SHARED PAGES
+
+## S1 ★ Login
+```
+Create "Login" page. Layout: two columns. Left (40%): deep-green panel with KLE logo, product name
+"KLE Exam Portal", one line "Secure online examinations", and three small trust points
+(Proctored, Audited, Faculty-approved results) with line icons. Right (60%): centered white card, max 420px.
+Content: heading "Sign in", role selector as 3 segmented options (Student / Faculty / COE),
+email or university ID field, password field with show/hide, "Forgot password?" link,
+checkbox "I agree to the examination rules", primary button "Sign in", divider "or",
+secondary button "Sign in with university SSO". Footer: support email and "System status: operational" dot.
+States: invalid credentials (inline red message), loading button, account locked banner.
+Primary action: Sign in.
+```
+
+## S2 Access denied (403), Session expired, 404, Error
+```
+Create four small centered-card pages using the same layout: "Access denied" (lock icon, text
+"Your role cannot open this page", buttons Go to dashboard / Contact support), "Session expired"
+(clock icon, "You were signed out for security", primary Sign in again), "Page not found" (404),
+"Something went wrong" (with a reference ID in monospace and a Retry button). Calm tone, no jokes.
+```
+
+## S3 Notifications drawer
+```
+Create a right-side drawer opened from the bell icon. Header "Notifications" with "Mark all read".
+Tabs: All / Action needed / System. List items: icon, title, one-line detail, relative time,
+unread dot. Group by Today / Earlier. Items link to the relevant page. Empty state "You're all caught up".
+```
+
+## S4 Profile and settings
+```
+Create "Profile & Settings". Left tabs: Profile, Security, Notifications, Accessibility.
+Profile: avatar, name, university ID, department, email (read-only fields from university records).
+Security: change password, active sessions list with "Sign out other devices".
+Notifications: toggles for email/SMS per event. Accessibility: font size slider, high-contrast toggle,
+extra-time accommodation shown as read-only chip ("+25% time approved"). Primary button "Save changes".
+```
+
+---
+
+# SECTION 2: STUDENT PAGES
+
+## ST1 ★ Student dashboard
+```
+Create "Student Dashboard". Top bar: logo, nav (Dashboard, My Exams, Results, Grievances, Practice),
+bell, avatar. Content:
+1) Greeting "Good morning, Anita" and one line with today's date.
+2) HERO CARD "Next exam": course code (mono) and title, date, time window, duration, mode chip
+   (Proctored), live countdown "Starts in 2d 4h", status chip (Registered / Not registered /
+   Not eligible), primary button "Open exam checklist".
+3) Row of 3 StatCards: Upcoming exams, Results published, Open grievances.
+4) Two columns: left "My exams" compact table (course, date, status chip, action); right
+   "Alerts" list (fee pending, attendance low, hall ticket ready) with amber chips.
+5) "Quick links": Practice tests, Rules and guidelines, Technical support.
+States: no exams (EmptyState), loading skeleton.
+```
+
+## ST2 ★ My courses and eligibility
+```
+Create "My Courses & Eligibility". Page title with semester selector. DataTable columns: course
+code (mono), course name, Fee status chip, Attendance % with small bar (threshold marker at 75%),
+Prerequisites chip, Eligibility chip (Eligible / Not eligible / Under review). Row expand shows the
+exact reason and how to fix it ("Attendance 71%: need 75%. Contact your course faculty for
+condonation") plus a button "Request review" for under-review cases. Banner at top summarising
+"4 of 5 courses eligible". Primary action: none on the page, only row actions.
+```
+
+## ST3 ★ Exam registration and hall ticket
+```
+Create "Exam Registration". Stepper: 1 Select exams, 2 Review details, 3 Confirm. Step 1: list of
+eligible exams as selectable cards (checkbox, course, date/time, duration, mode). Non-eligible
+exams are greyed with the reason chip. Step 2: summary table and exam rules acknowledgment
+checkbox. Step 3: success state with "Registration confirmed". Then create "Hall Ticket" page:
+a printable card with KLE logo, student photo placeholder, name, university ID, course, exam date
+and time window, mode, QR code, seat/session ID in mono, instructions list, buttons Download PDF
+and Print. Primary action: Confirm registration.
+```
+
+## ST4 Exam instructions and consent
+```
+Create "Exam Instructions" (like TCS iON / Mettl instruction page). Centered column, max 800px.
+Header: exam title, duration, total marks, number of questions, sections. Sections as an accordion:
+General instructions, Marking scheme (negative marking if any), Question palette legend
+(show all 5 states with sample squares), Proctoring rules (camera, microphone, fullscreen, no tab
+switching, what is logged), What happens if connection drops. A highlighted card "Your activity
+is recorded for faculty review. No automatic penalties are applied." Consent block: 3 checkboxes
+(read rules, camera/mic consent, I am the registered candidate). Primary button "Continue to system
+check" disabled until all are checked.
+```
+
+## ST5 ★ System check (pre-exam)
+```
+Create "System Check". Stepper with 4 steps: Camera, Microphone, Network, Identity photo.
+Show one step at a time in a centered card. Camera: live preview box with permission button,
+face-detected chip. Microphone: audio level meter that moves when the user speaks. Network:
+speed and latency result with chips (Good / Slow). Identity: capture button, preview, retake,
+and a small ID-card photo upload. Each completed step shows a green tick. If permission denied,
+show a red banner "Camera access is required for this proctored exam. You cannot start without
+it" with steps to enable it. Do not offer a fake camera. Primary button "All checks passed: go
+to waiting room" disabled until every step passes.
+```
+
+## ST6 Waiting room
+```
+Create "Waiting Room". Centered card: exam title, big countdown "Exam opens in 08:42", small
+checklist (System check done, Identity verified, Fullscreen ready), the candidate's name and ID,
+and a quiet tip "Do not close this window". When countdown reaches 0 the primary button "Start
+exam" enables. Show late-entry rule text: "Entry closes 15 minutes after start". States: window
+missed (red banner).
+```
+
+## ST7 ★ Exam runner: objective (single choice)
+```
+Update the existing exam page into a real proctored exam screen:
+- Remove the "Interview tip" card. Replace it with a ProctorTile (small camera preview, red
+  recording dot, label "Proctoring active") and a chip "Fullscreen on".
+- Top bar: exam name + course code left; right side: autosave text "Saved 10:42:05" with a
+  small dot (turns amber with "Offline, retrying" when disconnected), Timer, and candidate
+  name and ID. No sidebar or site navigation during the exam.
+- Section tabs under the top bar if multiple sections (Section A: MCQ, Section B: Short answer)
+  with answered/total counts.
+- Question card: "Question 8 of 20", marks chip "2 marks", negative marking chip if any,
+  a "Mark for review" toggle (amber flag), question text, options A to D.
+- Footer buttons: Previous, Clear response (ghost), Mark for review & next, and primary Save & next.
+- Right panel: QuestionPalette with 5 states and live counts under the legend
+  (Answered 8, Not answered 5, Not visited 6, Marked 1). Button "Submit exam" at the bottom,
+  outlined, NOT primary.
+```
+
+## ST8 Exam runner: multi-select and numeric
+```
+Create variants of the exam question card: (a) Multi-select with checkboxes and the line "Select
+all that apply", (b) numeric answer with an input and unit label, (c) match-the-following with
+two columns and dropdowns. Keep the same top bar, palette and footer as the objective exam screen.
+```
+
+## ST9 Exam runner: essay / short answer
+```
+Create the essay question variant. Two-column layout on desktop: question and any reference
+material (case text, table, image) in a scrollable left panel (40%), answer editor in the right
+panel (60%) with a plain-text editor, word counter "184 / 300 words", autosave text. Palette stays
+in a collapsible right drawer toggled by a "Questions" button. Keep top bar, Timer and
+ProctorTile. Disable paste visually with a small notice "Paste is disabled in this exam" (do not
+imply punishment).
+```
+
+## ST10 Exam runner: code question
+```
+Create a code question variant. Left: problem statement, input/output format, constraints,
+sample test cases in monospace boxes. Right: code editor area with language selector, line
+numbers, buttons "Run sample tests" (secondary) and "Save" (primary). Below the editor: a
+results panel with test case rows (Passed / Failed chips) and an output console. Keep top bar,
+Timer and ProctorTile.
+```
+
+## ST11 ★ Submit confirmation and receipt
+```
+Create two views. (1) A Dialog "Submit exam?" with a summary grid: Answered 18, Not answered 1,
+Not visited 0, Marked for review 1, time left. A warning line "You cannot change answers after
+submitting." Buttons: Review again (secondary) and Submit exam (primary). If time ends, show a
+full-screen "Time is up: your answers were submitted automatically". (2) "Submission Receipt"
+page: green success icon, "Your exam has been submitted", receipt card with exam name, candidate,
+submitted at (mono timestamp), a receipt ID, number of questions answered, and the sentence
+"Results will appear after faculty approval." Button "Back to dashboard".
+```
+
+## ST12 Connection lost and session resume
+```
+Create a modal overlay "Connection lost". Content: wifi-off icon, "We are saving your answers
+locally and will sync when you reconnect", live reconnect attempt counter, the Timer continuing
+visibly (server time), and last synced time. After reconnect, a green toast "Back online: all
+answers saved". Also create a "Resume exam" page for after a browser refresh: shows the exam name,
+time remaining, and primary button "Resume exam". Note: "The exam timer did not stop."
+```
+
+## ST13 Practice tests and result
+```
+Create "Practice Tests" list page: filter by course and unit, cards with title, number of
+questions, estimated time, last score chip, button "Start practice". Practice runner = same layout
+as the exam runner but with no ProctorTile, and after each answer an inline feedback panel
+(correct/incorrect, explanation). Create "Practice Result": score ring, per-unit bar chart,
+weak topics list with "Practice again" links.
+```
+
+## ST14 ★ Scorecard (after publish)
+```
+Create "Scorecard". Header with exam name and "Published on" date. Left: result summary card
+(total marks, percentage, grade, Pass/Fail chip) and section-wise score bars. Right: marks table
+by question (number, topic, marks obtained / max, status chip: Auto-graded / Faculty-approved).
+Banner when results are not yet published: "Results will be available after faculty approval".
+Buttons: Download scorecard PDF, "Review my answers", and a secondary "Raise a grievance".
+Do not show any AI or draft marks to students.
+```
+
+## ST15 Answer review
+```
+Create "Answer Review" (only after publish). Question list on the left with correct/incorrect
+dots. Main panel: question, student's answer, correct answer or model answer, marks awarded,
+faculty remark. Button "Raise grievance on this question" opens ST16.
+```
+
+## ST16 ★ Raise grievance / revaluation
+```
+Create "Raise Grievance" as a form in a centered card with a stepper. Step 1: choose exam and
+question(s). Step 2: reason dropdown (Marks not added, Answer key issue, Evaluation concern,
+Other), description textarea with 1000 character limit, file upload for supporting material.
+Step 3: review and submit. A notice: "Requests must be filed within 72 hours of result release.
+Time left: 41h". Success state with grievance ID. Primary action: Submit grievance.
+```
+
+## ST17 ★ Grievance tracker
+```
+Create "My Grievances". Table: ID (mono), exam, question, filed on, status chip (Submitted,
+Under faculty review, Resolved, Rejected). Row click opens a detail drawer with a vertical
+Timeline (Submitted, Assigned, Reviewed, Decision), faculty remark, old marks vs revised marks.
+The student cannot change the status. Empty state: "No grievances filed".
+```
+
+## ST18 Study hub (optional)
+```
+Create "Study Hub": course selector, tabs Flashcards, Practice questions, Notes. Flashcard view:
+a large flip card with "Show answer", buttons Easy / Medium / Hard, progress bar. Keep calm
+and uncluttered. Add a small chip "Practice material, not part of the exam".
+```
+
+---
+
+# SECTION 3: FACULTY PAGES
+
+Faculty and COE use a left SideNav (deep green background, white text, active item has mint tint and
+a left bar). Top bar has page title, search, bell, profile menu.
+
+## F1 ★ Faculty dashboard
+```
+Create "Faculty Dashboard". Title and ONE primary button "New exam". Row 1: "Needs your action"
+as ONE white card split into 4 columns with hairline dividers: Ambiguous eligibility, Integrity flags
+to review, Grading drafts to approve, Open grievances. Large numbers; numbers over 0 get an amber
+dot; each column has a text link. Row 2: lifecycle Stepper for the selected exam (dropdown):
+Eligibility, Delivery, Integrity and Auto-grade, Subjective grading, Faculty review, Publish,
+Grievances with count under each; Faculty review is the amber human gate. Row 3: Tabs (Exams,
+Registration and eligibility, Integrity report, Grading queue, Results and grievances) with
+count pills, and the Exams DataTable beneath (code, full title wrapping, format, duration, marks,
+window, status chip, row menu). No truncated titles.
+```
+
+## F2 Exams list
+```
+Create "Exams" list with filters (course, status, date range), search, and a DataTable with
+status chips (Draft, Scheduled, Live, Grading, In review, Published, Archived). Bulk action bar
+appears when rows are selected. Row menu: Open, Duplicate, Archive.
+```
+
+## F3 ★ Create exam wizard
+```
+Create "New Exam" 6-step wizard with a horizontal Stepper and a sticky footer (Back / Save draft /
+Next). Steps: 1 Course and details (course, title, type, instructions text), 2 Question paper
+(upload .docx, answer key, rubric; show a parse-preview table of detected questions with type,
+marks, unit and a per-row warning icon), 3 Eligibility rules (fees cleared toggle, attendance
+threshold slider default 75%, prerequisites list, rule for ambiguous cases = send to faculty),
+4 Delivery (date, start-end time window, duration, late entry minutes, shuffle questions and
+options toggle, proctoring options), 5 Grading (objective auto-grade, subjective assisted grading,
+negative marking, marks cap), 6 Review and create with a summary and the constraint card
+"Faculty approval of subjective grades and integrity flags is required before publishing" locked
+on. Primary action on last step: Create exam.
+```
+
+## F4 Paper and answer key approval
+```
+Create "Paper Approval". Left: list of questions (number, type, marks, unit, Bloom level tag).
+Right: selected question detail with options, correct answer, rubric, and a status chip. Warnings
+panel: "Answer key mismatch" items in amber. Footer: Approve paper (primary), Request changes.
+Once approved, show a lock badge and "Approved by Prof. X on date".
+```
+
+## F5 ★ Registration and eligibility roster
+```
+Create "Registration & Eligibility" for a selected exam. Summary StatCards: Eligible, Not eligible,
+Ambiguous, Registered. DataTable: student name, ID, fee chip, attendance % bar, prerequisites chip,
+decision chip. Ambiguous rows are highlighted with an amber left border and have buttons Approve
+and Reject opening a Dialog that requires a reason. Export CSV button.
+```
+
+## F6 Live exam monitor
+```
+Create "Live Monitor". Top stats: Candidates in exam, Submitted, Not started, Connection issues.
+Grid of candidate tiles (name, ID, progress bar, small status dot: active / idle / offline / flagged).
+Click a tile for a side drawer with recent events. No disqualify button anywhere; only
+"Flag for review" and "Send message". Extension requests appear as a list with Approve / Decline.
+```
+
+## F7 ★ Integrity report (batch)
+```
+Create "Integrity Report". Top row of StatCards (Flags total, High, Medium, Low) and a small
+bar chart of flags by type (tab switch, fullscreen exit, copy/paste attempt, audio spike, multiple
+faces, multiple login, timing anomaly). DataTable: candidate, event types, count, highest severity
+chip, status chip (Needs review / Reviewed / Cleared). Banner: "Flags are signals for faculty
+review. No automatic penalties are applied." Row click opens F8.
+```
+
+## F8 ★ Candidate integrity detail
+```
+Create "Candidate Integrity Detail". Left: candidate card and a vertical Timeline of events with
+time, type, severity chip, and a small snapshot thumbnail when available. Right: decision card with
+radio options (No concern / Needs follow-up / Refer to committee), a required notes textarea, and
+primary button "Record decision". Show an "Audit" note: who reviewed and when. No score or
+penalty fields on this page.
+```
+
+## F9 Objective grading results
+```
+Create "Objective Results". Summary: average, highest, lowest, pass %. Histogram of marks. Table
+by candidate with total, auto-graded marks, status. Question analysis tab: per-question % correct
+and a flag for items with unusual results (possible key issue). Button "Send to review".
+```
+
+## F10 ★ Subjective review (split view)
+```
+Create "Review Subjective Answers". Top: progress "34 of 120 reviewed" with a ProgressBar, candidate
+selector, Previous / Next. Left panel (50%): question text, max marks, the student's answer
+(scrollable), word count. Right panel (50%): chip "AI draft, faculty decision required", rubric
+table (criterion, weight, AI score, short justification) and a confidence badge, a total with an
+editable marks field, a required "reason" textarea shown when marks differ from the draft, and
+buttons: Approve (primary), Adjust and approve, Flag for second evaluator. Show a warning chip
+when the answer is empty or looks like an instruction aimed at the grader ("Needs human attention").
+Keyboard hints at the bottom (J/K next/prev, A approve).
+```
+
+## F11 Session extension requests
+```
+Create "Extension Requests" table: candidate, exam, reason (technical issue, power cut),
+requested time, evidence, status. Actions Approve / Decline open a Dialog requiring a note. Banner:
+"Sessions are never extended automatically."
+```
+
+## F12 ★ Results approval and publish
+```
+Create "Review & Publish". Left: checklist card "Release gates" with live status rows: Eligibility
+verified, Unique papers verified, Auto-grades within max marks, All subjective drafts approved,
+All integrity flags decided, Validation report passed. Each row has a green tick or amber/red icon
+and a link to fix. Right: result summary (pass %, average) and primary button "Publish results"
+which is DISABLED until every gate is green. Clicking it opens a confirm Dialog with the version
+number and a "this notifies N students" line.
+```
+
+## F13 Version history and rollback
+```
+Create "Result Versions". Timeline list: v3 (current), v2, v1 with publisher, time, reason, and
+changes count. Buttons: View, Compare (side-by-side diff of marks changed), and Roll back (opens a
+Dialog explaining what will change). Mark the current version with a green chip.
+```
+
+## F14 ★ Grievance queue and detail
+```
+Create "Grievances" with tabs (New, In review, Resolved) and a DataTable (ID, student, exam,
+question, filed, due date, status). Detail page: left side by side panels: original question,
+student answer, awarded marks and grader notes; right: student's complaint and attachments. Decision
+card: Uphold score / Award revised marks (marks input) / Send to second evaluator, a required
+remark, primary button "Record decision". Timeline of all actions at the bottom.
+```
+
+## F15 Analytics and reports
+```
+Create "Reports". Filters by exam and cohort. Charts: score distribution, section-wise
+performance, question difficulty vs discrimination, flags per 100 candidates, grievance rate and
+average resolution time, AI draft agreement rate (how often faculty changed AI marks). Buttons:
+Export PDF and Export CSV.
+```
+
+## F16 ★ Audit log
+```
+Create "Audit Log". Filter bar (actor, action type, exam, date range), DataTable: time (mono),
+actor and role, action, object, result. A "Chain verified" green badge with Verify now button.
+Row click opens a drawer with the full record and hash. Read-only; no edit or delete controls.
+```
+
+---
+
+# SECTION 4: COE / ADMIN PAGES
+
+## C1 ★ COE dashboard
+```
+Create "COE Dashboard": cross-department stats (Exams this term, Live now, Pending ratification,
+Open grievances), a calendar strip of upcoming exams, "Pending ratification" list with Approve
+buttons, and a system health card (API, database, AI service, proctoring) with status dots.
+```
+
+## C2 Syllabus and question studio
+```
+Create "Syllabus & Question Studio". Step 1 drag-and-drop PDF upload (10 MB max). Step 2 shows
+extracted units as chips and the chunk count. Step 3 split screen "Verification queue": left
+AI-proposed questions with chips (Draft / Approved / Rejected), Bloom level and source; right the
+source syllabus excerpt with highlighted text. Buttons Approve, Edit, Reject. Footer: "Generate
+approved addendum PDF". Show a "SIMULATED" chip wherever data is not real.
+```
+
+## C3 Blueprint standardizer
+```
+Create "Blueprint Standardizer": a table to define the paper blueprint (unit, number of
+questions, marks, difficulty mix, Bloom mix) with live totals and a validation banner when totals
+do not match. Template save and apply buttons.
+```
+
+## C4 Users and roles
+```
+Create "Users & Roles": table (name, email, role chip, department, status), "Invite user"
+primary button, row menu (Change role, Deactivate). Changing a role opens a confirm Dialog and
+shows an audit notice. Bulk CSV import with a preview.
+```
+
+## C5 Courses and cohorts
+```
+Create "Courses & Cohorts": two-pane layout. Left course list, right tabs (Details, Enrolled
+students, Faculty, Eligibility data import). Import area for fee and attendance CSV with a
+validation preview table and error rows highlighted.
+```
+
+## C6 System status
+```
+Create "System Status": service cards (Web app, API, Database, AI grading, Proctoring) with
+status dot, latency and uptime; recent incidents list; and a "Run health check" button.
+```
+
+## C7 Pre-deployment checks
+```
+Create "Pre-deployment Checks": a checklist of automated checks (Rules tests, API tests, E2E, load
+test, accessibility, security scan) with Pass/Fail chips and last run time, a "Run all" button,
+and a summary "12 of 14 passed" card. Failed items expand to show details.
+```
+
+---
+
+# BUILD ORDER (for time-pressed demo)
+
+1. Prompt 0 (design system)
+2. S1 Login, ST1 Dashboard, ST2 Eligibility, ST5 System check, ST7 Exam runner, ST11 Submit and receipt, ST14 Scorecard, ST16 and ST17 Grievance
+3. F1 Dashboard, F3 Create exam, F5 Roster, F7 and F8 Integrity, F10 Subjective review, F12 Publish, F14 Grievance, F16 Audit
+4. C1 COE dashboard
+5. The rest as time allows
+
+# AFTER FIGMA: move the design into the real app
+
+Paste this into Antigravity along with the Figma link or exported code:
+
+```
+Use these Figma screens as the visual spec. Re-implement them in our existing React app.
+Keep all existing API calls, Firebase logic, routing and business rules. Do not rewrite backend code.
+Build the shared components (Button, StatusChip, DataTable, Stepper, Timer, QuestionPalette,
+ProctorTile, Dialog, Toast) once under src/components/ui and reuse them on every page.
+Create design tokens in src/design/tokens.css from the Figma colors and fonts.
+Role-based routes: /student/*, /faculty/*, /coe/*. A user must never see another role's navigation.
+Work one role at a time and stop after each for my review. Run lint, build and tests after each.
+```

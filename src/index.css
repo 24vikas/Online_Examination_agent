@@ -1,0 +1,45 @@
+@import "./design/tokens.css";
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  --color-inst-bg: var(--bg);
+  --color-inst-surface: var(--surface);
+  --color-inst-border: var(--border);
+
+  --color-inst-text: var(--text);
+  --color-inst-text-muted: var(--text-muted);
+
+  --color-inst-primary: var(--primary);
+  --color-inst-primary-hover: var(--primary-hover);
+  --color-inst-primary-tint: var(--primary-tint);
+
+  --color-inst-amber: var(--amber);
+  --color-inst-amber-bg: var(--amber-bg);
+
+  --color-inst-success: var(--success);
+  --color-inst-success-bg: var(--success-bg);
+
+  --color-inst-danger: var(--danger);
+  --color-inst-danger-bg: var(--danger-bg);
+
+  --color-inst-info: var(--info);
+  --color-inst-info-bg: var(--info-bg);
+}
+
+@layer base {
+  body {
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Monospace strictly for exam codes, timestamps, IDs, and logs */
+  .font-mono {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+}
